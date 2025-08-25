@@ -326,9 +326,10 @@ public class MyComponent : IDisposable
 - Use strong references for long-lived objects
 - Process queued events at consistent times (e.g., end of frame)
 
-## 🙏 Acknowledgments
-
+## Acknowledgments
 - Inspired by TinyMessenger https://github.com/grumpydev/TinyMessenger
 - Built with performance and game development in mind
 - Inspired by modern event-driven architecture patterns
 - Designed for zero-allocation, high-frequency scenarios
+- Game Engine Agnostic.
+- AI used to help write tests and this README file (Though you probably already guessed as much)
