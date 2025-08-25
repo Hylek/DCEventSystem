@@ -1,0 +1,22 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DCEventSystem.Core", "DCEventSystem.Core\DCEventSystem.Core.csproj", "{5D96A669-7F50-475B-8498-DA145A1B5942}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DCEventSystem.Tests", "DCEventSystem.Tests\DCEventSystem.Tests.csproj", "{4103EE6D-871F-44F1-A2AD-BF2D8AED7FC4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5D96A669-7F50-475B-8498-DA145A1B5942}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5D96A669-7F50-475B-8498-DA145A1B5942}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5D96A669-7F50-475B-8498-DA145A1B5942}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5D96A669-7F50-475B-8498-DA145A1B5942}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4103EE6D-871F-44F1-A2AD-BF2D8AED7FC4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4103EE6D-871F-44F1-A2AD-BF2D8AED7FC4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4103EE6D-871F-44F1-A2AD-BF2D8AED7FC4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4103EE6D-871F-44F1-A2AD-BF2D8AED7FC4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
