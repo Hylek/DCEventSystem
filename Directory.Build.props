@@ -1,0 +1,9 @@
+<Project>
+  <PropertyGroup>
+    <Version>1.0.0</Version>
+    <AssemblyVersion>1.0.0.0</AssemblyVersion>
+    <FileVersion>1.0.0.0</FileVersion>
+    <Copyright>Copyright © Your Name 2025</Copyright>
+    <Product>DCEventSystem</Product>
+  </PropertyGroup>
+</Project>

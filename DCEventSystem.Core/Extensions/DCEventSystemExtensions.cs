@@ -1,4 +1,5 @@
-﻿using DCEventSystem.Core;
+﻿using System;
+using DCEventSystem.Core;
 
 namespace DCEventSystem.Extensions;
 

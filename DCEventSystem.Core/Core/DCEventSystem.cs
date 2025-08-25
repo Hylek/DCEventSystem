@@ -1,4 +1,6 @@
-﻿using DCEventSystem.Internal.Caching;
+﻿using System;
+using System.Collections.Generic;
+using DCEventSystem.Internal.Caching;
 using DCEventSystem.Internal.Collections;
 using DCEventSystem.Internal.Events;
 
@@ -38,12 +40,11 @@ namespace DCEventSystem.Core;
         /// <exception cref="DCEventSystemAlreadyInitialisedException">Thrown when already initialized</exception>
         public static void Initialise(IEventSystemHost host)
         {
-            ArgumentNullException.ThrowIfNull(host);
-
             if (Host != null)
-                    throw new DCEventSystemAlreadyInitialisedException();
-                
-            Host = host;
+            {
+                throw new DCEventSystemAlreadyInitialisedException();
+            }
+            Host = host ?? throw new ArgumentNullException(nameof(host));
             Host.ScheduleUpdate(Update);
         }
 
