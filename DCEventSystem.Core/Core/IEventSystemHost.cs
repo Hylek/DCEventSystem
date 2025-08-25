@@ -1,4 +1,6 @@
-﻿namespace DCEventSystem.Core;
+﻿using System;
+
+namespace DCEventSystem.Core;
 
 /// <summary>
 /// Host interface that provides platform-specific services to the EventSystem

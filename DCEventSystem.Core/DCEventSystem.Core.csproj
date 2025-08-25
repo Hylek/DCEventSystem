@@ -1,10 +1,39 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-
     <PropertyGroup>
-        <TargetFramework>net8.0</TargetFramework>
-        <ImplicitUsings>enable</ImplicitUsings>
+        <TargetFramework>netstandard2.1</TargetFramework>
+        <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
-        <RootNamespace>DCEventSystem</RootNamespace>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <IncludeSymbols>true</IncludeSymbols>
+        <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+        
+        <PackageId>DanielCumbor.DCEventSystem.Core</PackageId>
+        <Version>1.0.0</Version>
+        <Authors>Daniel Cumbor</Authors>
+        <Description>Performant Event System for Games.</Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageIcon>icon.png</PackageIcon>
+        <PackageTags>events;gamedev;performance;dotnet;csharp</PackageTags>
+        <PackageReleaseNotes>Initial release</PackageReleaseNotes>
+
+        <RepositoryUrl>https://github.com/hylek/DCEventSystem</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryBranch>master</RepositoryBranch>
+
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+        <WarningsAsErrors />
+        <WarningsNotAsErrors>CS1591</WarningsNotAsErrors>
     </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="System.Buffers" Version="4.5.1" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="..\README.md" Pack="true" PackagePath="\" />
+        <None Include="..\icon.png" Pack="true" PackagePath="\" />
+    </ItemGroup>
 
 </Project>

@@ -1,4 +1,5 @@
-﻿using DCEventSystem.Core;
+﻿using System;
+using DCEventSystem.Core;
 using DCEventSystem.Internal.Caching;
 
 namespace DCEventSystem.Internal.Subscriptions;

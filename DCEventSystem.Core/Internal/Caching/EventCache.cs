@@ -1,4 +1,6 @@
-﻿using System.Buffers;
+﻿using System;
+using System.Buffers;
+using System.Collections.Generic;
 using DCEventSystem.Core;
 using DCEventSystem.Internal.Events;
 using DCEventSystem.Internal.Subscriptions;
