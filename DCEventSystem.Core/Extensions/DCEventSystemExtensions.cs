@@ -14,7 +14,7 @@ public static class DCEventSystemExtensions
         where T : struct, IDCEvent
     {
         // Could implement weak reference tracking tied to object lifetime
-        return Core.DCEventSystem.Subscribe(handler, useStrongReference: false);
+        return Core.DCEventHub.Subscribe(handler, useStrongReference: false);
     }
         
     /// <summary>
@@ -22,7 +22,7 @@ public static class DCEventSystemExtensions
     /// </summary>
     public static void QueueHighPriority<T>(T evt, int priority = -100) where T : struct, IDCEvent
     {
-        Core.DCEventSystem.Queue(evt, priority);
+        Core.DCEventHub.Queue(evt, priority);
     }
         
     /// <summary>
@@ -30,6 +30,6 @@ public static class DCEventSystemExtensions
     /// </summary>
     public static void QueueLowPriority<T>(T evt, int priority = 100) where T : struct, IDCEvent
     {
-        Core.DCEventSystem.Queue(evt, priority);
+        Core.DCEventHub.Queue(evt, priority);
     }
 }

@@ -9,7 +9,7 @@ namespace DCEventSystem.Core;
     /// <summary>
     /// High-performance event system with queuing and priority support
     /// </summary>
-    public static class DCEventSystem
+    public static class DCEventHub
     {
         private static readonly Dictionary<Type, IEventCache> Caches = new();
         private static readonly Queue<QueuedEventBase> EventQueue = new();
