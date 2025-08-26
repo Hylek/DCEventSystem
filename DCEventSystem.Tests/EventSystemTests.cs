@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using DCEventSystem.Core;
-using DCEventSystem.Extensions;
+using DCEventSystem.Core.Extensions;
 using DCEventSystem.Tests.TestInfrastructure;
 using Xunit;
 
@@ -12,7 +12,7 @@ using Xunit;
 
 namespace DCEventSystem.Tests;
 
-public struct TestEvent : IEvent
+public struct TestIdcEvent : IDCEvent
 {
     public int Id { get; set; }
 }
@@ -42,9 +42,9 @@ public class DcEventSystemTests
             }
         }
 
-        Assert.Throws<DCEventSystemNotInitialisedException>(() => Core.DCEventSystem.Publish(new TestEvent { Id = 1 }));
-        Assert.Throws<DCEventSystemNotInitialisedException>(() => Core.DCEventSystem.Queue(new TestEvent { Id = 2 }));
-        Assert.Throws<DCEventSystemNotInitialisedException>(() => Core.DCEventSystem.Subscribe<TestEvent>(_ => { }));
+        Assert.Throws<DCEventSystemNotInitialisedException>(() => Core.DCEventSystem.Publish(new TestIdcEvent { Id = 1 }));
+        Assert.Throws<DCEventSystemNotInitialisedException>(() => Core.DCEventSystem.Queue(new TestIdcEvent { Id = 2 }));
+        Assert.Throws<DCEventSystemNotInitialisedException>(() => Core.DCEventSystem.Subscribe<TestIdcEvent>(_ => { }));
     }
 
     [Fact(DisplayName = "02 - Initialise schedules updates and allows publish/subscribe")]
@@ -54,18 +54,18 @@ public class DcEventSystemTests
         Core.DCEventSystem.Initialise(host);
 
         var received = new List<int>();
-        using var sub = Core.DCEventSystem.Subscribe<TestEvent>(e => received.Add(e.Id));
+        using var sub = Core.DCEventSystem.Subscribe<TestIdcEvent>(e => received.Add(e.Id));
 
-        Core.DCEventSystem.Publish(new TestEvent { Id = 10 });
+        Core.DCEventSystem.Publish(new TestIdcEvent { Id = 10 });
         Assert.Equal(new[] { 10 }, received);
 
         // Queued + processing via manual call or host tick
-        Core.DCEventSystem.Queue(new TestEvent { Id = 11 });
+        Core.DCEventSystem.Queue(new TestIdcEvent { Id = 11 });
         Core.DCEventSystem.ProcessQueuedEvents();
         Assert.Equal(new[] { 10, 11 }, received);
 
         // Update should also process queued events
-        Core.DCEventSystem.Queue(new TestEvent { Id = 12 });
+        Core.DCEventSystem.Queue(new TestIdcEvent { Id = 12 });
         host.Tick(1);
         Assert.Equal(new[] { 10, 11, 12 }, received);
     }
@@ -74,20 +74,20 @@ public class DcEventSystemTests
     public void Strong_Subscription_Dispose_Unsubscribes()
     {
         var calls = 0;
-        var sub = Core.DCEventSystem.Subscribe<TestEvent>(_ => calls++, useStrongReference: true);
+        var sub = Core.DCEventSystem.Subscribe<TestIdcEvent>(_ => calls++, useStrongReference: true);
 
-        Core.DCEventSystem.Publish(new TestEvent { Id = 1 });
+        Core.DCEventSystem.Publish(new TestIdcEvent { Id = 1 });
         Assert.Equal(1, calls);
 
         sub.Dispose();
-        Core.DCEventSystem.Publish(new TestEvent { Id = 2 });
+        Core.DCEventSystem.Publish(new TestIdcEvent { Id = 2 });
         Assert.Equal(1, calls);
     }
 
     private sealed class HandlerOwner
     {
         public int Calls;
-        public Action<TestEvent> CreateHandler() => (_ => Calls++);
+        public Action<TestIdcEvent> CreateHandler() => (_ => Calls++);
     }
 
     [Fact(DisplayName = "04 - Weak subscription allows GC and stops receiving events")]
@@ -98,7 +98,7 @@ public class DcEventSystemTests
         var sub = Core.DCEventSystem.Subscribe(handler, useStrongReference: false);
 
         // First publish calls the handler
-        Core.DCEventSystem.Publish(new TestEvent { Id = 1 });
+        Core.DCEventSystem.Publish(new TestIdcEvent { Id = 1 });
         Assert.Equal(1, owner.Calls);
 
         // Drop strong references
@@ -112,7 +112,7 @@ public class DcEventSystemTests
         GC.Collect();
 
         // Even if the subscription is still present, its WeakReference.Target is gone, so IsAlive false
-        Core.DCEventSystem.Publish(new TestEvent { Id = 2 });
+        Core.DCEventSystem.Publish(new TestIdcEvent { Id = 2 });
 
         // Acquire target from weak reference; it may or may not be collected depending on timing; ensure no more calls
         var alive = wr.IsAlive; // not used except to avoid trimming
@@ -123,13 +123,13 @@ public class DcEventSystemTests
     public void Priority_Queue_Order()
     {
         var order = new List<string>();
-        using var sub = Core.DCEventSystem.Subscribe<TestEvent>(e => order.Add($"{e.Id}"));
+        using var sub = Core.DCEventSystem.Subscribe<TestIdcEvent>(e => order.Add($"{e.Id}"));
 
         // Enqueue several with priority and one standard
-        DCEventSystem.Extensions.DCEventSystemExtensions.QueueHighPriority(new TestEvent { Id = -5 }, priority: -5);   // highest priority
-        DCEventSystem.Extensions.DCEventSystemExtensions.QueueLowPriority(new TestEvent { Id = 10 }, priority: 10);
-        Core.DCEventSystem.Queue(new TestEvent { Id = 0 }, priority: 0);                 // standard queue
-        Core.DCEventSystem.Queue(new TestEvent { Id = 1 }, priority: 1);
+        DCEventSystemExtensions.QueueHighPriority(new TestIdcEvent { Id = -5 }, priority: -5);   // highest priority
+        DCEventSystemExtensions.QueueLowPriority(new TestIdcEvent { Id = 10 }, priority: 10);
+        Core.DCEventSystem.Queue(new TestIdcEvent { Id = 0 }, priority: 0);                 // standard queue
+        Core.DCEventSystem.Queue(new TestIdcEvent { Id = 1 }, priority: 1);
 
         Core.DCEventSystem.ProcessQueuedEvents();
 
@@ -144,12 +144,12 @@ public class DcEventSystemTests
         Assert.Throws<DCEventSystemAlreadyInitialisedException>(() => Core.DCEventSystem.Initialise(host));
 
         int received = 0;
-        using var sub = Core.DCEventSystem.Subscribe<TestEvent>(_ => received++);
+        using var sub = Core.DCEventSystem.Subscribe<TestIdcEvent>(_ => received++);
 
         // Enqueue 10,005 events: expect at least one warning (>5000) and error at 10000 overflow
         for (int i = 0; i < 10005; i++)
         {
-            Core.DCEventSystem.Queue(new TestEvent { Id = i });
+            Core.DCEventSystem.Queue(new TestIdcEvent { Id = i });
         }
 
         // Process what made it into the queues
@@ -167,10 +167,10 @@ public class DcEventSystemTests
         // We'll subscribe two handlers: one throws, one increments counter. Publish and ensure no crash.
 
         int calls = 0;
-        using var s1 = Core.DCEventSystem.Subscribe<TestEvent>(_ => throw new InvalidOperationException("boom"));
-        using var s2 = Core.DCEventSystem.Subscribe<TestEvent>(_ => calls++);
+        using var s1 = Core.DCEventSystem.Subscribe<TestIdcEvent>(_ => throw new InvalidOperationException("boom"));
+        using var s2 = Core.DCEventSystem.Subscribe<TestIdcEvent>(_ => calls++);
 
-        Core.DCEventSystem.Publish(new TestEvent { Id = 1 });
+        Core.DCEventSystem.Publish(new TestIdcEvent { Id = 1 });
 
         Assert.Equal(1, calls);
         // We can't assert on logs from here because EventSystem.Host is the host created in test 02, not this 'host'.

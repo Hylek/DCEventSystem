@@ -1,4 +1,4 @@
-﻿namespace DCEventSystem.Internal.Caching;
+﻿namespace DCEventSystem.Core.Internal.Caching;
 
 internal interface IEventCache
 {

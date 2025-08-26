@@ -1,14 +1,13 @@
 ﻿using System;
-using DCEventSystem.Core;
-using DCEventSystem.Internal.Caching;
+using DCEventSystem.Core.Internal.Caching;
 
-namespace DCEventSystem.Internal.Subscriptions;
+namespace DCEventSystem.Core.Internal.Subscriptions;
 
 /// <summary>
 /// Strong reference subscription that prevents garbage collection of handler
 /// </summary>
 internal sealed class StrongSubscription<T>(Action<T> handler, EventCache<T> cache) : ISubscription<T>
-    where T : struct, IEvent
+    where T : struct, IDCEvent
 {
     private readonly Action<T> _handler = handler ?? throw new ArgumentNullException(nameof(handler));
     private readonly EventCache<T> _cache = cache ?? throw new ArgumentNullException(nameof(cache));

@@ -1,16 +1,15 @@
 ﻿using System;
 using System.Buffers;
 using System.Collections.Generic;
-using DCEventSystem.Core;
-using DCEventSystem.Internal.Events;
-using DCEventSystem.Internal.Subscriptions;
+using DCEventSystem.Core.Internal.Events;
+using DCEventSystem.Core.Internal.Subscriptions;
 
-namespace DCEventSystem.Internal.Caching;
+namespace DCEventSystem.Core.Internal.Caching;
 
 /// <summary>
 /// Cache for managing subscriptions and pooling for a specific event type
 /// </summary>
-internal sealed class EventCache<T> : IEventCache where T : struct, IEvent
+internal sealed class EventCache<T> : IEventCache where T : struct, IDCEvent
 {
     private readonly HashSet<ISubscription<T>> _subscriptions = [];
     private readonly List<ISubscription<T>> _toRemove = [];

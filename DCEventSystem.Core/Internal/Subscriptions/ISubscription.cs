@@ -1,9 +1,8 @@
 ﻿using System;
-using DCEventSystem.Core;
 
-namespace DCEventSystem.Internal.Subscriptions;
+namespace DCEventSystem.Core.Internal.Subscriptions;
 
-internal interface ISubscription<in T> : IDisposable where T : struct, IEvent
+internal interface ISubscription<in T> : IDisposable where T : struct, IDCEvent
 {
     bool IsAlive { get; }
     Action<T> GetAction();

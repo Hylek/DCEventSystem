@@ -1,7 +1,6 @@
 ﻿using System;
-using DCEventSystem.Core;
 
-namespace DCEventSystem.Extensions;
+namespace DCEventSystem.Core.Extensions;
 
 /// <summary>
 /// Extension methods for common EventSystem operations
@@ -12,7 +11,7 @@ public static class DCEventSystemExtensions
     /// Subscribe to events with automatic disposal when the target is destroyed
     /// </summary>
     public static IDisposable SubscribeWhileAlive<T>(this object target, Action<T> handler) 
-        where T : struct, IEvent
+        where T : struct, IDCEvent
     {
         // Could implement weak reference tracking tied to object lifetime
         return Core.DCEventSystem.Subscribe(handler, useStrongReference: false);
@@ -21,7 +20,7 @@ public static class DCEventSystemExtensions
     /// <summary>
     /// Queue an event with high priority (negative priority value)
     /// </summary>
-    public static void QueueHighPriority<T>(T evt, int priority = -100) where T : struct, IEvent
+    public static void QueueHighPriority<T>(T evt, int priority = -100) where T : struct, IDCEvent
     {
         Core.DCEventSystem.Queue(evt, priority);
     }
@@ -29,7 +28,7 @@ public static class DCEventSystemExtensions
     /// <summary>
     /// Queue an event with low priority (positive priority value)
     /// </summary>
-    public static void QueueLowPriority<T>(T evt, int priority = 100) where T : struct, IEvent
+    public static void QueueLowPriority<T>(T evt, int priority = 100) where T : struct, IDCEvent
     {
         Core.DCEventSystem.Queue(evt, priority);
     }

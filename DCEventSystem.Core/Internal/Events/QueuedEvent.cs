@@ -1,14 +1,13 @@
 ﻿using System;
-using DCEventSystem.Core;
-using DCEventSystem.Internal.Caching;
+using DCEventSystem.Core.Internal.Caching;
 
-namespace DCEventSystem.Internal.Events;
+namespace DCEventSystem.Core.Internal.Events;
 
 /// <summary>
 /// Concrete implementation of queued event for specific event type
 /// </summary>
 internal sealed class QueuedEvent<T>(EventCache<T> cache) : QueuedEventBase
-    where T : struct, IEvent
+    where T : struct, IDCEvent
 {
     private readonly EventCache<T> _cache = cache ?? throw new ArgumentNullException(nameof(cache));
     private T _data;
