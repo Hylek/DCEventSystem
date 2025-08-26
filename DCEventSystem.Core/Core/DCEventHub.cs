@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using DCEventSystem.Internal.Caching;
-using DCEventSystem.Internal.Collections;
-using DCEventSystem.Internal.Events;
+using DCEventSystem.Core.Internal.Caching;
+using DCEventSystem.Core.Internal.Collections;
+using DCEventSystem.Core.Internal.Events;
 
 namespace DCEventSystem.Core;
 
     /// <summary>
     /// High-performance event system with queuing and priority support
     /// </summary>
-    public static class DCEventSystem
+    public static class DCEventHub
     {
         private static readonly Dictionary<Type, IEventCache> Caches = new();
         private static readonly Queue<QueuedEventBase> EventQueue = new();
@@ -30,7 +30,7 @@ namespace DCEventSystem.Core;
         /// <summary>
         /// Internal access to the host for other classes
         /// </summary>
-        internal static IEventSystemHost Host { get; private set; } = null!;
+        internal static IDCEventSystemHost Host { get; private set; } = null!;
 
         /// <summary>
         /// Initialize the event system with a host implementation
@@ -38,7 +38,7 @@ namespace DCEventSystem.Core;
         /// <param name="host">Host that provides platform-specific services</param>
         /// <exception cref="ArgumentNullException">Thrown when host is null</exception>
         /// <exception cref="DCEventSystemAlreadyInitialisedException">Thrown when already initialized</exception>
-        public static void Initialise(IEventSystemHost host)
+        public static void Initialise(IDCEventSystemHost host)
         {
             if (Host != null)
             {
@@ -54,7 +54,7 @@ namespace DCEventSystem.Core;
         /// <typeparam name="T">Event type</typeparam>
         /// <param name="evt">Event data</param>
         /// <exception cref="DCEventSystemNotInitialisedException">Thrown when not initialized</exception>
-        public static void Publish<T>(T evt) where T : struct, IEvent
+        public static void Publish<T>(T evt) where T : struct, IDCEvent
         {
             if (Host == null)
                 throw new DCEventSystemNotInitialisedException();
@@ -70,7 +70,7 @@ namespace DCEventSystem.Core;
         /// <param name="evt">Event data</param>
         /// <param name="priority">Priority (lower values = higher priority, 0 = standard queue)</param>
         /// <exception cref="DCEventSystemNotInitialisedException">Thrown when not initialized</exception>
-        public static void Queue<T>(T evt, int priority = 0) where T : struct, IEvent
+        public static void Queue<T>(T evt, int priority = 0) where T : struct, IDCEvent
         {
             if (Host == null)
                 throw new DCEventSystemNotInitialisedException();
@@ -107,7 +107,7 @@ namespace DCEventSystem.Core;
         /// <param name="useStrongReference">Whether to use strong reference (prevents GC of handler)</param>
         /// <returns>Disposable subscription that can be disposed to unsubscribe</returns>
         /// <exception cref="DCEventSystemNotInitialisedException">Thrown when not initialized</exception>
-        public static IDisposable Subscribe<T>(Action<T> handler, bool useStrongReference = false) where T : struct, IEvent
+        public static IDisposable Subscribe<T>(Action<T> handler, bool useStrongReference = false) where T : struct, IDCEvent
         {
             if (Host == null)
                 throw new DCEventSystemNotInitialisedException();
@@ -165,7 +165,7 @@ namespace DCEventSystem.Core;
             CleanupPools();
         }
 
-        private static EventCache<T> GetOrCreateCache<T>() where T : struct, IEvent
+        private static EventCache<T> GetOrCreateCache<T>() where T : struct, IDCEvent
         {
             if (Caches.TryGetValue(typeof(T), out var cache)) return (EventCache<T>)cache;
             
@@ -209,7 +209,7 @@ namespace DCEventSystem.Core;
         /// <summary>
         /// Internal method to decrement subscription count for debug tracking
         /// </summary>
-        internal static void DecrementSubscriptionCount<T>() where T : struct, IEvent
+        internal static void DecrementSubscriptionCount<T>() where T : struct, IDCEvent
         {
             if (SubscriptionCounts.ContainsKey(typeof(T)))
             {

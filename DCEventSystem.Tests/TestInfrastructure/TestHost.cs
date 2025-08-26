@@ -4,7 +4,7 @@ using DCEventSystem.Core;
 
 namespace DCEventSystem.Tests.TestInfrastructure;
 
-public sealed class TestHost : IEventSystemHost
+public sealed class TestHost : IDCEventSystemHost
 {
     private Action _updateCallback = null!;
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Runtime.CompilerServices;
 
-namespace DCEventSystem.Internal.Collections;
+namespace DCEventSystem.Core.Internal.Collections;
 
 /// <summary>
 /// Min-heap implementation where lower priority values have higher priority

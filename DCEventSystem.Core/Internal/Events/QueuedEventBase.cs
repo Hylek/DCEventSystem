@@ -1,4 +1,4 @@
-﻿namespace DCEventSystem.Internal.Events;
+﻿namespace DCEventSystem.Core.Internal.Events;
 
 /// <summary>
 /// Base class for queued events that can be processed and returned to pools

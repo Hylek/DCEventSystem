@@ -5,7 +5,7 @@ namespace DCEventSystem.Core;
 /// <summary>
 /// Host interface that provides platform-specific services to the EventSystem
 /// </summary>
-public interface IEventSystemHost
+public interface IDCEventSystemHost
 {
     /// <summary>Gets the current time in seconds</summary>
     float CurrentTime { get; }

@@ -3,4 +3,4 @@
 /// <summary>
 /// Base interface for all events. Use this for all event definitions.
 /// </summary>
-public interface IEvent { }
+public interface IDCEvent { }
