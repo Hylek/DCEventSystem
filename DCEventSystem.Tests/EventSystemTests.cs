@@ -29,43 +29,33 @@ public class DcEventSystemTests
     [Fact(DisplayName = "01 - Throws when not initialized: Publish, Queue, Subscribe")]
     public void NotInitialised_Throws()
     {
-        // Ensure Host is null for this first test via reflection if already set by other runs
-        var hostProp = typeof(Core.DCEventHub).GetProperty("Host", BindingFlags.NonPublic | BindingFlags.Static);
-        var hostVal = hostProp?.GetValue(null);
-        if (hostVal != null)
-        {
-            // Try to set Host back to null (private setter). If it fails, we'll just skip further checks.
-            var setMethod = hostProp!.SetMethod;
-            if (setMethod != null)
-            {
-                setMethod.Invoke(null, new object?[] { null });
-            }
-        }
+        // Ensure facade not initialised
+        typeof(Core.DCEventHubFacade).GetProperty("Default")?.SetValue(null, null);
 
-        Assert.Throws<DCEventSystemNotInitialisedException>(() => Core.DCEventHub.Publish(new TestIdcEvent { Id = 1 }));
-        Assert.Throws<DCEventSystemNotInitialisedException>(() => Core.DCEventHub.Queue(new TestIdcEvent { Id = 2 }));
-        Assert.Throws<DCEventSystemNotInitialisedException>(() => Core.DCEventHub.Subscribe<TestIdcEvent>(_ => { }));
+        Assert.Throws<DCEventSystemNotInitialisedException>(() => Core.DCEventHubFacade.Publish(new TestIdcEvent { Id = 1 }));
+        Assert.Throws<DCEventSystemNotInitialisedException>(() => Core.DCEventHubFacade.Queue(new TestIdcEvent { Id = 2 }));
+        Assert.Throws<DCEventSystemNotInitialisedException>(() => Core.DCEventHubFacade.Subscribe<TestIdcEvent>(_ => { }));
     }
 
     [Fact(DisplayName = "02 - Initialise schedules updates and allows publish/subscribe")]
     public void Initialise_And_Publish_Subscribe()
     {
         var host = new TestHost();
-        Core.DCEventHub.Initialise(host);
+        Core.DCEventHubFacade.Initialise(host);
 
         var received = new List<int>();
-        using var sub = Core.DCEventHub.Subscribe<TestIdcEvent>(e => received.Add(e.Id));
+        using var sub = Core.DCEventHubFacade.Subscribe<TestIdcEvent>(e => received.Add(e.Id));
 
-        Core.DCEventHub.Publish(new TestIdcEvent { Id = 10 });
+        Core.DCEventHubFacade.Publish(new TestIdcEvent { Id = 10 });
         Assert.Equal(new[] { 10 }, received);
 
         // Queued + processing via manual call or host tick
-        Core.DCEventHub.Queue(new TestIdcEvent { Id = 11 });
-        Core.DCEventHub.ProcessQueuedEvents();
+        Core.DCEventHubFacade.Queue(new TestIdcEvent { Id = 11 });
+        Core.DCEventHubFacade.ProcessQueuedEvents();
         Assert.Equal(new[] { 10, 11 }, received);
 
         // Update should also process queued events
-        Core.DCEventHub.Queue(new TestIdcEvent { Id = 12 });
+        Core.DCEventHubFacade.Queue(new TestIdcEvent { Id = 12 });
         host.Tick(1);
         Assert.Equal(new[] { 10, 11, 12 }, received);
     }
@@ -74,13 +64,13 @@ public class DcEventSystemTests
     public void Strong_Subscription_Dispose_Unsubscribes()
     {
         var calls = 0;
-        var sub = Core.DCEventHub.Subscribe<TestIdcEvent>(_ => calls++, useStrongReference: true);
+        var sub = Core.DCEventHubFacade.Subscribe<TestIdcEvent>(_ => calls++, useStrongReference: true);
 
-        Core.DCEventHub.Publish(new TestIdcEvent { Id = 1 });
+        Core.DCEventHubFacade.Publish(new TestIdcEvent { Id = 1 });
         Assert.Equal(1, calls);
 
         sub.Dispose();
-        Core.DCEventHub.Publish(new TestIdcEvent { Id = 2 });
+        Core.DCEventHubFacade.Publish(new TestIdcEvent { Id = 2 });
         Assert.Equal(1, calls);
     }
 
@@ -95,10 +85,10 @@ public class DcEventSystemTests
     {
         var owner = new HandlerOwner();
         var handler = owner.CreateHandler();
-        var sub = Core.DCEventHub.Subscribe(handler, useStrongReference: false);
+        var sub = Core.DCEventHubFacade.Subscribe(handler, useStrongReference: false);
 
         // First publish calls the handler
-        Core.DCEventHub.Publish(new TestIdcEvent { Id = 1 });
+        Core.DCEventHubFacade.Publish(new TestIdcEvent { Id = 1 });
         Assert.Equal(1, owner.Calls);
 
         // Drop strong references
@@ -112,7 +102,7 @@ public class DcEventSystemTests
         GC.Collect();
 
         // Even if the subscription is still present, its WeakReference.Target is gone, so IsAlive false
-        Core.DCEventHub.Publish(new TestIdcEvent { Id = 2 });
+        Core.DCEventHubFacade.Publish(new TestIdcEvent { Id = 2 });
 
         // Acquire target from weak reference; it may or may not be collected depending on timing; ensure no more calls
         var alive = wr.IsAlive; // not used except to avoid trimming
@@ -122,16 +112,18 @@ public class DcEventSystemTests
     [Fact(DisplayName = "05 - Priority queue orders events before standard queue (min-heap lower priority first)")]
     public void Priority_Queue_Order()
     {
+        var host = new TestHost();
+        Core.DCEventHubFacade.Initialise(host);
         var order = new List<string>();
-        using var sub = Core.DCEventHub.Subscribe<TestIdcEvent>(e => order.Add($"{e.Id}"));
+        using var sub = Core.DCEventHubFacade.Subscribe<TestIdcEvent>(e => order.Add($"{e.Id}"));
 
         // Enqueue several with priority and one standard
         DCEventSystemExtensions.QueueHighPriority(new TestIdcEvent { Id = -5 }, priority: -5);   // highest priority
         DCEventSystemExtensions.QueueLowPriority(new TestIdcEvent { Id = 10 }, priority: 10);
-        Core.DCEventHub.Queue(new TestIdcEvent { Id = 0 }, priority: 0);                 // standard queue
-        Core.DCEventHub.Queue(new TestIdcEvent { Id = 1 }, priority: 1);
+        Core.DCEventHubFacade.Queue(new TestIdcEvent { Id = 0 }, priority: 0);                 // standard queue
+        Core.DCEventHubFacade.Queue(new TestIdcEvent { Id = 1 }, priority: 1);
 
-        Core.DCEventHub.ProcessQueuedEvents();
+        Core.DCEventHubFacade.ProcessQueuedEvents();
 
         Assert.Equal(new[] { "-5", "1", "10", "0" }, order);
     }
@@ -140,20 +132,20 @@ public class DcEventSystemTests
     public void Queue_Overflow_Warns_And_Drops()
     {
         var host = new TestHost();
-        // Re-initialise is not allowed; verify it throws when already initialised
-        Assert.Throws<DCEventSystemAlreadyInitialisedException>(() => Core.DCEventHub.Initialise(host));
+        // Re-initialise should replace the previous hub without throwing
+        Core.DCEventHubFacade.Initialise(host);
 
         int received = 0;
-        using var sub = Core.DCEventHub.Subscribe<TestIdcEvent>(_ => received++);
+        using var sub = Core.DCEventHubFacade.Subscribe<TestIdcEvent>(_ => received++);
 
         // Enqueue 10,005 events: expect at least one warning (>5000) and error at 10000 overflow
         for (int i = 0; i < 10005; i++)
         {
-            Core.DCEventHub.Queue(new TestIdcEvent { Id = i });
+            Core.DCEventHubFacade.Queue(new TestIdcEvent { Id = i });
         }
 
         // Process what made it into the queues
-        Core.DCEventHub.ProcessQueuedEvents();
+        Core.DCEventHubFacade.ProcessQueuedEvents();
 
         // Should be at most 10000 processed
         Assert.InRange(received, 5000, 10000);
@@ -163,14 +155,14 @@ public class DcEventSystemTests
     public void Handler_Exception_Is_Logged_And_Does_Not_Stop_Others()
     {
         var host = new TestHost();
-        // Host is already initialised, but logs are captured from initial host only. We cannot swap host here.
+        Core.DCEventHubFacade.Initialise(host);
         // We'll subscribe two handlers: one throws, one increments counter. Publish and ensure no crash.
 
         int calls = 0;
-        using var s1 = Core.DCEventHub.Subscribe<TestIdcEvent>(_ => throw new InvalidOperationException("boom"));
-        using var s2 = Core.DCEventHub.Subscribe<TestIdcEvent>(_ => calls++);
+        using var s1 = Core.DCEventHubFacade.Subscribe<TestIdcEvent>(_ => throw new InvalidOperationException("boom"));
+        using var s2 = Core.DCEventHubFacade.Subscribe<TestIdcEvent>(_ => calls++);
 
-        Core.DCEventHub.Publish(new TestIdcEvent { Id = 1 });
+        Core.DCEventHubFacade.Publish(new TestIdcEvent { Id = 1 });
 
         Assert.Equal(1, calls);
         // We can't assert on logs from here because EventSystem.Host is the host created in test 02, not this 'host'.
@@ -182,9 +174,9 @@ public class DcEventSystemTests
     public void DebugPrintStats_Logs()
     {
         var host = new TestHost();
-        // Can't reassign Host; but calling DebugPrintStats should call Host.LogWarning on the initial host.
+        Core.DCEventHubFacade.Initialise(host);
         // We simply verify the call completes.
-        Core.DCEventHub.DebugPrintStats();
+        Core.DCEventHubFacade.DebugPrintStats();
         Assert.True(true);
     }
 #endif

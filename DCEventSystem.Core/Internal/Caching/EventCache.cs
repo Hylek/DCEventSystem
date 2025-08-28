@@ -41,8 +41,8 @@ internal sealed class EventCache<T> : IEventCache where T : struct, IDCEvent
                 }
                 catch (Exception e)
                 {
-                    // Access host through EventSystem instead of static reference
-                    Core.DCEventHub.Host?.LogError($"Error in event handler for {typeof(T).Name}: {e}");
+                    // Log handler errors to stderr to avoid coupling cache to a global host
+                    Console.Error.WriteLine($"[DCEventSystem] Error in event handler for {typeof(T).Name}: {e}");
                 }
                 finally
                 {
